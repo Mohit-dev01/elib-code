@@ -1,4 +1,5 @@
 import app from "./app";
+import bookRouter from "./book/bookRouter";
 import config from "./config/config";
 import connectDb from "./config/db";
 import globalErrorHandler from "./middleware/globalErrorHandler";
@@ -15,6 +16,7 @@ const startServer = async () => {
   app.use(express.json());
 
   app.use("/api/users", userRouter);
+  app.use("/api/books", bookRouter);
   app.use(globalErrorHandler);
 };
 startServer();
