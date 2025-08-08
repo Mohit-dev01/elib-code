@@ -44,7 +44,7 @@ const createUser = async (req: Request, res: Response, next: NextFunction) => {
       expiresIn: "7d",
     });
 
-    return res.json({
+    return res.status(201).json({
       accessToken: jwtToken,
     });
   } catch (error) {
