@@ -168,11 +168,14 @@ const getSingleBook = async (
     const book = await BookModel.findOne({
       _id: bookId,
     });
+    if (!book) {
+      return next(createHttpError(404, "Book not found"));
+    }
     return res.json({
       book: book,
     });
   } catch (error) {
-    return next(createHttpError(404, "Book not found" + error));
+    return next(createHttpError(500, "Book find error" + error));
   }
 };
 export { createBook, updateBook, listBooks, getSingleBook };
