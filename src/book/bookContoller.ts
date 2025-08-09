@@ -4,12 +4,15 @@ import path from "node:path";
 import createHttpError from "http-errors";
 import BookModel from "./bookModel";
 import fs from "node:fs";
+import { AuthenticateRequest } from "../middleware/authenticate";
 
 const createBook = async (req: Request, res: Response, next: NextFunction) => {
   console.log("files", req.files);
 
   try {
+    const _req = req as AuthenticateRequest;
     const { title, genre } = req.body;
+
     const files = req.files as { [fieldname: string]: Express.Multer.File[] };
     const coverImageMimetype = files.coverImage
       ? files.coverImage[0]?.mimetype.split("/").at(-1)
@@ -23,7 +26,7 @@ const createBook = async (req: Request, res: Response, next: NextFunction) => {
     const uploadResult = await cloudinary.uploader.upload(filePath, {
       public_id: fileName || "",
       folder: "book_covers",
-      format: coverImageMimetype || "jdg",
+      format: coverImageMimetype || "jpg",
     });
 
     const bookFileName = files.file ? files.file[0]?.filename : "";
@@ -44,7 +47,7 @@ const createBook = async (req: Request, res: Response, next: NextFunction) => {
     const newBook = await BookModel.create({
       title,
       genre,
-      author: "689626bf805a5ba9b903d6e1",
+      author: _req.userId,
       coverImage: uploadResult.secure_url,
       file: uploadBook.secure_url,
     });

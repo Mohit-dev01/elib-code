@@ -40,7 +40,7 @@ const createUser = async (req: Request, res: Response, next: NextFunction) => {
     return next(createHttpError(500, "Error creating new user :" + error));
   }
   try {
-    const jwtToken = sign({ data: newUser._id }, config.JWT_SECRET as string, {
+    const jwtToken = sign({ sub: newUser._id }, config.JWT_SECRET as string, {
       expiresIn: "7d",
     });
 
@@ -72,7 +72,7 @@ const loginUser = async (req: Request, res: Response, next: NextFunction) => {
     if (!isPasswordMatch) {
       return next(createHttpError(400, "Not a valid password"));
     }
-    const jwtToken = sign({ data: user._id }, config.JWT_SECRET as string, {
+    const jwtToken = sign({ sub: user._id }, config.JWT_SECRET as string, {
       expiresIn: "7d",
     });
 
