@@ -60,4 +60,90 @@ const createBook = async (req: Request, res: Response, next: NextFunction) => {
     return next(createHttpError(400, `Error uploading file ${error}`));
   }
 };
-export { createBook };
+
+const updateBook = async (req: Request, res: Response, next: NextFunction) => {
+  const { title, genre } = req.body;
+  const files = req.files as { [fieldname: string]: Express.Multer.File[] };
+
+  let completeCoverImage = "";
+  if (files.coverImage) {
+    const fileName = files.coverImage ? files.coverImage[0]?.filename : "";
+    const coverImageMimetype = files.coverImage
+      ? files.coverImage[0]?.mimetype.split("/").at(-1)
+      : "";
+    const imagePath = path.resolve(
+      __dirname,
+      "../../public/uploads",
+      fileName as string
+    );
+
+    completeCoverImage = fileName as string;
+    const uploadImage = await cloudinary.uploader.upload(imagePath, {
+      public_id: completeCoverImage,
+      folder: "book_covers",
+      format: coverImageMimetype || "jpg",
+    });
+
+    completeCoverImage = uploadImage.secure_url;
+
+    await fs.promises.unlink(imagePath);
+  }
+
+  let completeFileName = "";
+  if (files.file) {
+    const bookFileName = files.file ? files.file[0]?.filename : "";
+    const bookFilePath = path.resolve(
+      __dirname,
+      "../../public/uploads",
+      bookFileName as string
+    );
+
+    completeFileName = bookFileName as string;
+    const uploadBook = await cloudinary.uploader.upload(bookFilePath, {
+      resource_type: "raw",
+      filename_override: completeFileName,
+      folder: "book_pdf",
+      format: "pdf",
+    });
+    completeFileName = uploadBook.secure_url;
+    await fs.promises.unlink(bookFilePath);
+  }
+  const bookId = req.params.bookId;
+
+  try {
+    const book = await BookModel.findOne({
+      _id: bookId,
+    });
+    if (!book) {
+      return next(createHttpError(404, "Book do not exist"));
+    }
+
+    const _req = req as AuthenticateRequest;
+
+    if (book.author._id.toString() !== _req.userId) {
+      return next(createHttpError(403, "You can not update a book"));
+    }
+
+    const updatedBook = await BookModel.findOneAndUpdate(
+      {
+        _id: bookId,
+      },
+      {
+        title: title,
+        genre: genre,
+        coverImage: completeCoverImage ? completeCoverImage : book.coverImage,
+        file: completeFileName ? completeFileName : book.file,
+      },
+      {
+        new: true,
+      }
+    );
+
+    return res.json({
+      updatedBook: updatedBook,
+    });
+  } catch (error) {
+    return next(createHttpError(400, `Error updating book ${error}`));
+  }
+};
+export { createBook, updateBook };
