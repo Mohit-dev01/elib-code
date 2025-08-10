@@ -10,6 +10,7 @@ const bookSchema = new Schema<book>(
     },
     author: {
       type: Schema.Types.ObjectId,
+      ref: "User",
       required: true,
     },
     coverImage: {
