@@ -11,7 +11,7 @@ const createBook = async (req: Request, res: Response, next: NextFunction) => {
 
   try {
     const _req = req as AuthenticateRequest;
-    const { title, genre } = req.body;
+    const { title, genre, description } = req.body;
 
     const files = req.files as { [fieldname: string]: Express.Multer.File[] };
     const coverImageMimetype = files.coverImage
@@ -47,6 +47,7 @@ const createBook = async (req: Request, res: Response, next: NextFunction) => {
     const newBook = await BookModel.create({
       title,
       genre,
+      description,
       author: _req.userId,
       coverImage: uploadResult.secure_url,
       file: uploadBook.secure_url,
@@ -62,7 +63,7 @@ const createBook = async (req: Request, res: Response, next: NextFunction) => {
 };
 
 const updateBook = async (req: Request, res: Response, next: NextFunction) => {
-  const { title, genre } = req.body;
+  const { title, genre, description } = req.body;
   const files = req.files as { [fieldname: string]: Express.Multer.File[] };
 
   let completeCoverImage = "";
@@ -131,6 +132,7 @@ const updateBook = async (req: Request, res: Response, next: NextFunction) => {
       {
         title: title,
         genre: genre,
+        description: description,
         coverImage: completeCoverImage ? completeCoverImage : book.coverImage,
         file: completeFileName ? completeFileName : book.file,
       },
@@ -150,9 +152,7 @@ const updateBook = async (req: Request, res: Response, next: NextFunction) => {
 const listBooks = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const books = await BookModel.find().populate("author", "name");
-    return res.json({
-      books: books,
-    });
+    return res.json(books);
   } catch (error) {
     return next(createHttpError(500, "Error getting books" + error));
   }
@@ -171,9 +171,7 @@ const getSingleBook = async (
     if (!book) {
       return next(createHttpError(404, "Book not found"));
     }
-    return res.json({
-      book: book,
-    });
+    return res.json(book);
   } catch (error) {
     return next(createHttpError(500, "Book find error" + error));
   }
@@ -213,7 +211,5 @@ const deleteBook = async (req: Request, res: Response, next: NextFunction) => {
   } catch (error) {
     return next(createHttpError(500, "Error deleting book" + error));
   }
-
-  return res.json({});
 };
 export { createBook, updateBook, listBooks, getSingleBook, deleteBook };
