@@ -10,15 +10,14 @@ const BookCard = ({ book }: { book: Book }) => {
         <Image
           src={book.coverImage}
           alt={book.title}
-          width={130}
-          height={200}
-          className="object-cover"
+          width={0}
+          height={0}
+          sizes="100vw"
+          style={{ width: "12rem", height: "12rem" }}
         />
         <div>
-          <div className="text-orange-500 text-xl line-clamp-2">
-            {book.title}
-          </div>
-          <div className="text-orange-700 text-xl mb-5">{book.author.name}</div>
+          <h2 className="text-orange-500 text-xl line-clamp-2">{book.title}</h2>
+          <p className="text-orange-700 text-xl mb-5">{book.author.name}</p>
           <Link
             href={`/book/${book._id}`}
             className="p-1 border rounded-md border-orange-700 text-orange-500 "
